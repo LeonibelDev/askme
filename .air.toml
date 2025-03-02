@@ -25,5 +25,5 @@ watch_files = [
 
 # Comando para ejecutar cuando se reinicie el servidor
 cmd = [
-  "go", "run", "cmd/main.go",
+  "go", "run", "cmd/main/main.go",
 ]

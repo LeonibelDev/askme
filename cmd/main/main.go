@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/leonibeldev/askme/db"
 	routes "github.com/leonibeldev/askme/internal/routes/auth"
 	"github.com/leonibeldev/askme/internal/routes/blog"
 
@@ -14,6 +15,9 @@ import (
 func main() {
 	gin.SetMode(gin.DebugMode)
 	r := gin.Default()
+
+	// db connection
+	db.VerifyIfDBExist()
 
 	// Routes for API Auth
 	auth := r.Group("/api/v1")

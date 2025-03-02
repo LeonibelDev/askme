@@ -3,6 +3,7 @@ package routes
 import (
 	"net/http"
 
+	"github.com/leonibeldev/askme/internal/controllers"
 	"github.com/leonibeldev/askme/pkg/utils/models"
 
 	"github.com/gin-gonic/gin"
@@ -52,6 +53,16 @@ func Signup(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	// verify if user exist
+	user := controllers.UserExist(userData.Email)
+	if user {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "user already exist"})
+		return
+	}
+
+	// create user
+	controllers.CreateUser(userData)
 
 	// return user data and comparation
 	c.JSON(http.StatusOK, gin.H{
