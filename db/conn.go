@@ -2,9 +2,6 @@ package db
 
 import (
 	"database/sql"
-	"fmt"
-	"os"
-	"path/filepath"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -18,10 +15,6 @@ func Connection() *sql.DB {
 	if db == nil {
 		panic("db nil")
 	}
-
-	wd, _ := os.Getwd()
-	dbPath := filepath.Join(wd + "/db/users.db")
-	fmt.Println(dbPath)
 
 	return db
 }

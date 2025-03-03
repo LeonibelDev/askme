@@ -1,7 +1,7 @@
 # .air.toml
 
 # Directorios donde se observarán los cambios
-root = "."
+root = "cmd/main"
 tmp_dir = "tmp"
 
 # Carpeta donde están tus archivos Go
@@ -25,5 +25,5 @@ watch_files = [
 
 # Comando para ejecutar cuando se reinicie el servidor
 cmd = [
-  "go", "run", "cmd/main/main.go",
+  "go", "run", ".",
 ]

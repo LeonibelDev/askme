@@ -5,6 +5,7 @@ import (
 
 	"github.com/leonibeldev/askme/internal/controllers"
 	"github.com/leonibeldev/askme/pkg/utils/models"
+	"github.com/leonibeldev/askme/pkg/utils/token"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -32,12 +33,19 @@ func Login(c *gin.Context) {
 func Signup(c *gin.Context) {
 
 	var userData models.User
+
+	// verify if all data is comming
 	if err := c.ShouldBindJSON(&userData); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	originaPassword := userData.Password
+	/*
+	 check fields information, to validate not insert SQLInjection in DB
+	 write: ⚠
+	*/
+
+	originalPassword := userData.Password
 
 	// hash password
 	hash, err := bcrypt.GenerateFromPassword([]byte(userData.Password), bcrypt.DefaultCost)
@@ -45,10 +53,11 @@ func Signup(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
 	userData.Password = string(hash)
 
 	// compare password
-	err = bcrypt.CompareHashAndPassword([]byte(userData.Password), []byte(originaPassword))
+	err = bcrypt.CompareHashAndPassword([]byte(userData.Password), []byte(originalPassword))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -64,9 +73,14 @@ func Signup(c *gin.Context) {
 	// create user
 	controllers.CreateUser(userData)
 
+	// generate token
+	token, err := token.GenerateToken(userData.Email)
+	if err != nil {
+		panic(err)
+	}
+
 	// return user data and comparation
 	c.JSON(http.StatusOK, gin.H{
-		"user":    userData,
-		"compare": (err == nil),
+		"token": "Bearer " + token,
 	})
 }
