@@ -2,8 +2,10 @@ package routes
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/leonibeldev/askme/internal/controllers"
+	"github.com/leonibeldev/askme/pkg/utils/hash"
 	"github.com/leonibeldev/askme/pkg/utils/models"
 	"github.com/leonibeldev/askme/pkg/utils/token"
 
@@ -11,23 +13,66 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func Handler(c *gin.Context) {
+func Handler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// get header (authorization)
+		if len(c.GetHeader("Authorization")) == 0 {
+			c.JSON(http.StatusLengthRequired, gin.H{
+				"error": "No token provide (Authorization)",
+			})
+			return
+		}
 
-	c.JSON(http.StatusOK, gin.H{
-		"Message": "Welcome to askme.dev API *",
-		"status":  http.StatusOK,
-	})
+		AuthorizationToken := strings.Split(c.GetHeader("Authorization"), " ")[1]
+
+		// validate token
+		claims, err := token.GetClaims(AuthorizationToken)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Invalid token in header (Authorization)",
+			})
+			return
+		}
+
+		//return claims
+		c.Set("claims", claims)
+		c.Next()
+	}
 }
 
 func Login(c *gin.Context) {
 
+	// parse user data input
 	var LoginValues models.Login
 	if err := c.ShouldBindJSON(&LoginValues); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, LoginValues)
+	// validate if user exist
+	dbUser, err := controllers.GetUser(LoginValues.Email)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "user not found",
+		})
+		return
+	}
+
+	// compare password
+	matchingPassword := hash.CheckPasswordHash(LoginValues.Password, dbUser.HashPassword)
+	if !matchingPassword {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "password not matching",
+		})
+		return
+	}
+
+	// generate toke if all information is correct ⚠
+	stringToken, _ := token.GenerateToken(dbUser.Email)
+
+	c.JSON(http.StatusOK, gin.H{
+		"token": "Bearer " + stringToken,
+	})
 }
 
 func Signup(c *gin.Context) {
@@ -48,7 +93,7 @@ func Signup(c *gin.Context) {
 	originalPassword := userData.Password
 
 	// hash password
-	hash, err := bcrypt.GenerateFromPassword([]byte(userData.Password), bcrypt.DefaultCost)
+	hash, err := hash.HashPassword(userData.Password)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -82,5 +127,16 @@ func Signup(c *gin.Context) {
 	// return user data and comparation
 	c.JSON(http.StatusOK, gin.H{
 		"token": "Bearer " + token,
+	})
+}
+
+func Home(c *gin.Context) {
+	claims, exist := c.Get("claims")
+	if !exist {
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": claims,
 	})
 }

@@ -7,6 +7,24 @@ import (
 	"github.com/leonibeldev/askme/pkg/utils/models"
 )
 
+func GetUser(email string) (models.DBUser, error) {
+
+	db := db.Connection()
+	defer db.Close()
+
+	query := `
+		SELECT name, email, hashpassword FROM users WHERE email = ?
+	`
+	var user models.DBUser
+
+	err := db.QueryRow(query, email).Scan(&user.Name, &user.Email, &user.HashPassword)
+	if err == sql.ErrNoRows {
+		return models.DBUser{}, sql.ErrNoRows
+	}
+
+	return user, nil
+}
+
 func UserExist(email string) bool {
 
 	db := db.Connection()
