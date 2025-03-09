@@ -30,6 +30,7 @@ func VerifyIfDBExist() error {
 			name TEXT,
 			email TEXT,
 			hashpassword TEXT,
+			role TEXT DEFAULT "admin",
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 		);
 	`

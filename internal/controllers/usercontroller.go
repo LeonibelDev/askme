@@ -13,11 +13,11 @@ func GetUser(email string) (models.DBUser, error) {
 	defer db.Close()
 
 	query := `
-		SELECT name, email, hashpassword FROM users WHERE email = ?
+		SELECT name, email, hashpassword, role, created_at FROM users WHERE email = ?
 	`
 	var user models.DBUser
 
-	err := db.QueryRow(query, email).Scan(&user.Name, &user.Email, &user.HashPassword)
+	err := db.QueryRow(query, email).Scan(&user.Name, &user.Email, &user.HashPassword, &user.Role, &user.Created_at)
 	if err == sql.ErrNoRows {
 		return models.DBUser{}, sql.ErrNoRows
 	}

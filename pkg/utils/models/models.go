@@ -1,5 +1,9 @@
 package models
 
+import (
+	"time"
+)
+
 type User struct {
 	Name     string `json:"name" binding:"required"`
 	Email    string `json:"email" binding:"required"`
@@ -7,9 +11,11 @@ type User struct {
 }
 
 type DBUser struct {
-	Name         string `json:"name"`
-	Email        string `json:"email"`
-	HashPassword string `json:"hashpassword"`
+	Name         string    `json:"name"`
+	Email        string    `json:"email"`
+	HashPassword string    `json:"hashpassword"`
+	Role         string    `json:"role"`
+	Created_at   time.Time `json:"created_at"`
 }
 
 type Login struct {

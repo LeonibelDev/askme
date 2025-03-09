@@ -14,7 +14,7 @@ func GenerateToken(email string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"exp":        time.Now().Add(time.Hour * 24 * 30).Unix(),
 		"authorized": true,
-		"user":       email,
+		"email":      email,
 	})
 
 	tokenString, err := token.SignedString(secretKey)
@@ -26,7 +26,7 @@ func GenerateToken(email string) (string, error) {
 
 }
 
-func GetClaims(tokenString string) (interface{}, error) {
+func GetClaims(tokenString string) (map[string]interface{}, error) {
 	// Parse token
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// Validate signature

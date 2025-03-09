@@ -9,7 +9,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/leonibeldev/askme/db"
-	routes "github.com/leonibeldev/askme/internal/routes/auth"
+	adminRoutes "github.com/leonibeldev/askme/internal/routes/admin"
+	authRoutes "github.com/leonibeldev/askme/internal/routes/auth"
 	"github.com/leonibeldev/askme/internal/routes/blog"
 )
 
@@ -26,14 +27,20 @@ func main() {
 	// db connection
 	db.VerifyIfDBExist()
 
-	// Routes for API Auth
-	auth := r.Group("/api/v1")
+	// Routes for Auth API
+	auth := r.Group("/auth")
 
-	auth.POST("/signup", routes.Signup)
-	auth.POST("/login", routes.Login)
-	auth.GET("/home", routes.Handler(), routes.Home) // secure router 🔒
+	auth.POST("/signup", authRoutes.Signup)
+	auth.POST("/login", authRoutes.Login)
 
-	// Routes for API Blog
+	// Routes for Admin 🔒
+	admin := r.Group("/admin")
+	admin.Use(authRoutes.Handler())
+
+	admin.GET("/home", adminRoutes.Home) // secure routes 🔒
+	admin.GET("/user", adminRoutes.User)
+
+	// Routes for Blog API and Portfolio
 	read := r.Group("/read")
 
 	read.GET("/:id", blog.Read)

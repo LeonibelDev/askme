@@ -13,12 +13,16 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+/*
+middleware to validate token before
+access to secure routes
+*/
 func Handler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// get header (authorization)
 		if len(c.GetHeader("Authorization")) == 0 {
-			c.JSON(http.StatusLengthRequired, gin.H{
-				"error": "No token provide (Authorization)",
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"error": "No token provide (Unauthorized)",
 			})
 			return
 		}
@@ -35,7 +39,7 @@ func Handler() gin.HandlerFunc {
 		}
 
 		//return claims
-		c.Set("claims", claims)
+		c.Set("email", claims["email"])
 		c.Next()
 	}
 }
@@ -127,16 +131,5 @@ func Signup(c *gin.Context) {
 	// return user data and comparation
 	c.JSON(http.StatusOK, gin.H{
 		"token": "Bearer " + token,
-	})
-}
-
-func Home(c *gin.Context) {
-	claims, exist := c.Get("claims")
-	if !exist {
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"message": claims,
 	})
 }
