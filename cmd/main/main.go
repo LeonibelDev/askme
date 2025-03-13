@@ -44,6 +44,7 @@ func main() {
 	read := r.Group("/read")
 
 	read.GET("/:id", blog.Read)
+	read.GET("/github/:username", blog.GetGitHubRepos)
 
 	// Handle 404 routes
 	r.NoRoute(func(c *gin.Context) {
