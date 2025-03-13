@@ -5,3 +5,4 @@
 db/users.db
 go.sum
 .env
+./api.json
