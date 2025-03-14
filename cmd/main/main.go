@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -56,6 +55,6 @@ func main() {
 	})
 
 	// Run application
-	port := os.Getenv("PORT")
-	r.Run(fmt.Sprintf(":%s", port))
+	//port := os.Getenv("PORT")
+	r.Run(fmt.Sprintf(":%s", "3000"))
 }
