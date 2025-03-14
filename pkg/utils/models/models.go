@@ -30,3 +30,20 @@ type GitHubRepo struct {
 	Description string `json:"description"`
 	Language    string `json:"language"`
 }
+
+type BlogPost struct {
+	Position int    `json:"position" binding:"required"`
+	Type     string `json:"Type" binding:"required"`
+	Content  string `json:"content" binding:"required"`
+}
+
+type Post struct {
+	ID       string     `json:"id,omitempty"`
+	Title    string     `json:"title" binding:"required"`
+	Cover    string     `json:"cover" binding:"required"`
+	Author   string     `json:"author" binding:"required"`
+	Date     time.Time  `json:"date" binding:"required"`
+	Visible  bool       `json:"visible,omitempty"`
+	Tags     []string   `json:"tags" binding:"required"`
+	Sections []BlogPost `json:"sections" binding:"required"`
+}

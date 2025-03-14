@@ -40,9 +40,10 @@ func main() {
 	admin.GET("/user", adminRoutes.User)
 
 	// Routes for Blog API and Portfolio
-	read := r.Group("/read")
+	read := r.Group("/blog")
 
 	read.GET("/:id", blog.Read)
+	read.POST("/new", blog.Write)
 	read.GET("/github/:username", blog.GetGitHubRepos)
 
 	// Handle 404 routes
