@@ -43,7 +43,7 @@ func main() {
 	read := r.Group("/blog")
 
 	read.GET("/:id", blog.Read)
-	read.POST("/new", blog.Write)
+	read.POST("/new", authRoutes.Handler(), blog.Write)
 	read.GET("/github/:username", blog.GetGitHubRepos)
 
 	// Handle 404 routes

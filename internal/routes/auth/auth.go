@@ -24,7 +24,7 @@ func Handler() gin.HandlerFunc {
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"error": "No token provide (Unauthorized)",
 			})
-			return
+			c.Abort()
 		}
 
 		AuthorizationToken := strings.Split(c.GetHeader("Authorization"), " ")[1]
@@ -35,7 +35,7 @@ func Handler() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": "Invalid token in header (Authorization)",
 			})
-			return
+			c.Abort()
 		}
 
 		//return claims

@@ -10,7 +10,6 @@ import (
 func Read(c *gin.Context) {
 
 	id, _ := c.Params.Get("id")
-
 	c.JSON(200, gin.H{
 		"Message": "Welcome to askme.dev API *",
 		"id":      id,
@@ -27,8 +26,7 @@ func Write(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{
-		"Message": "Welcome to askme.dev API *",
-		"data":    post,
+		"post": post,
 	})
 
 }
