@@ -24,7 +24,10 @@ func main() {
 	r := gin.Default()
 
 	// db connection
-	db.VerifyIfDBExist()
+	db.CreateTables()
+
+	// Routes for Home / portfolio
+	r.GET("/github/:username", blog.GetGitHubRepos)
 
 	// Routes for Auth API
 	auth := r.Group("/auth")
@@ -44,7 +47,6 @@ func main() {
 
 	read.GET("/:id", blog.Read)
 	read.POST("/new", authRoutes.Handler(), blog.Write)
-	read.GET("/github/:username", blog.GetGitHubRepos)
 
 	// Handle 404 routes
 	r.NoRoute(func(c *gin.Context) {

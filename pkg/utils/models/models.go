@@ -42,7 +42,7 @@ type Post struct {
 	Title    string     `json:"title" binding:"required"`
 	Cover    string     `json:"cover" binding:"required"`
 	Author   string     `json:"author" binding:"required"`
-	Date     time.Time  `json:"date" binding:"required"`
+	Date     time.Time  `json:"date,omitempty" binding:"required"`
 	Visible  bool       `json:"visible,omitempty"`
 	Tags     []string   `json:"tags" binding:"required"`
 	Sections []BlogPost `json:"sections" binding:"required"`

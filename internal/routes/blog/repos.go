@@ -5,14 +5,17 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/leonibeldev/askme/pkg/utils/models"
 )
 
 func GetGitHubRepos(c *gin.Context) {
-	username, _ := c.Params.Get("username")
+	username, exists := c.Params.Get("username")
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Username parameter is required"})
+		return
+	}
 
 	url := fmt.Sprintf("https://api.github.com/users/%s/repos", username)
 
@@ -40,8 +43,10 @@ func GetGitHubRepos(c *gin.Context) {
 		return
 	}
 
-	var message strings.Builder
-	message.WriteString(fmt.Sprintf("Github repos %s", username))
+	if len(repos) < 1 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "This user doesn't have any public repositories"})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"repos": repos,

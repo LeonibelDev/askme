@@ -2,8 +2,10 @@ package blog
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/leonibeldev/askme/internal/controllers"
 	"github.com/leonibeldev/askme/pkg/utils/models"
 )
 
@@ -25,8 +27,20 @@ func Write(c *gin.Context) {
 		return
 	}
 
+	// set post date
+	post.Date = time.Now()
+
+	// save post
+	save, err := controllers.SavePost(post)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		return
+	}
+
+	// return response
 	c.JSON(200, gin.H{
-		"post": post,
+		"status": save,
+		"post":   post,
 	})
 
 }

@@ -2,7 +2,7 @@
 /tmp
 /notes
 .air.toml
-db/users.db
+*.db
 go.sum
 .env
 api.json
