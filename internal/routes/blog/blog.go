@@ -1,7 +1,9 @@
 package blog
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -30,17 +32,26 @@ func Write(c *gin.Context) {
 	// set post date
 	post.Date = time.Now()
 
+	// set post author
+	author, _ := c.Get("email")
+	post.Author = author.(string)
+
 	// save post
-	save, err := controllers.SavePost(post)
+	_, err := controllers.SavePost(post)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
+	}
+
+	// print sections
+	for _, section := range post.Sections {
+		fmt.Println("Section: ", section)
 	}
 
 	// return response
 	c.JSON(200, gin.H{
-		"status": save,
-		"post":   post,
+		"post": post,
+		"tags": strings.Join(post.Tags, ", "),
 	})
 
 }

@@ -41,8 +41,8 @@ type Post struct {
 	ID       string     `json:"id,omitempty"`
 	Title    string     `json:"title" binding:"required"`
 	Cover    string     `json:"cover" binding:"required"`
-	Author   string     `json:"author" binding:"required"`
-	Date     time.Time  `json:"date,omitempty" binding:"required"`
+	Author   string     `json:"author,omitempty"`
+	Date     time.Time  `json:"date,omitempty"`
 	Visible  bool       `json:"visible,omitempty"`
 	Tags     []string   `json:"tags" binding:"required"`
 	Sections []BlogPost `json:"sections" binding:"required"`

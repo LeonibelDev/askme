@@ -1,7 +1,9 @@
 package controllers
 
 import (
-	"database/sql"
+	"context"
+	"fmt"
+	"strings"
 
 	"github.com/leonibeldev/askme/db"
 	"github.com/leonibeldev/askme/pkg/utils/models"
@@ -9,16 +11,43 @@ import (
 
 func SavePost(post models.Post) (bool, error) {
 
-	db := db.Connection()
-	defer db.Close()
+	tx, err := db.Conn.Begin(context.Background())
+	if err != nil {
+		return false, err
+	}
 
+	// rollback transaction if error
+	defer func() {
+		if err != nil {
+			tx.Rollback(context.Background())
+		}
+	}()
+
+	// First insert data in post table
 	query := `
-		INSERT INTO posts (title, cover, author, date, visible, tags, sections) VALUES (?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO posts (title, cover, author, tags) VALUES ($1, $2, $3, $4) RETURNING id
 	`
 
-	_, err := db.Exec(query, post.Title, post.Cover, post.Author, post.Date, post.Visible, post.Tags, post.Sections)
+	err = tx.QueryRow(context.Background(), query, post.Title, post.Cover, post.Author, strings.Join(post.Tags, ", ")).Scan(&post.ID)
+	if err != nil {
+		return false, err
+	}
 
-	if err == sql.ErrNoRows {
+	fmt.Println("Post ID: ", post.ID)
+
+	// Then insert sections in po
+	querySections := `
+		INSERT INTO blog_posts (position, type, content, post_id) VALUES ($1, $2, $3, $4)
+	`
+
+	for _, section := range post.Sections {
+		_, err := tx.Exec(context.Background(), querySections, section.Position, section.Type, section.Content, post.ID)
+		if err != nil {
+			return false, fmt.Errorf("error inserting section: %v, error: %w", section, err)
+		}
+	}
+
+	if err = tx.Commit(context.Background()); err != nil {
 		return false, err
 	}
 

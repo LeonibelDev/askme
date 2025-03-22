@@ -30,7 +30,7 @@ func User(c *gin.Context) {
 	}
 
 	// get user from db
-	user, _ := controllers.GetUser(fmt.Sprintf("%s", userEmail))
+	user, _ := controllers.GetUser(userEmail.(string))
 
 	c.JSON(http.StatusOK, gin.H{
 		"user": user,

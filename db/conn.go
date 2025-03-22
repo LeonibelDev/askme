@@ -1,64 +1,69 @@
 package db
 
 import (
-	"database/sql"
+	"context"
+	"fmt"
+	"os"
 
+	"github.com/jackc/pgx/v5"
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func Connection() *sql.DB {
-	db, err := sql.Open("sqlite3", "db/askme.db")
+var Conn *pgx.Conn
+
+func DataBaseConn() error {
+	var err error
+	Conn, err = pgx.Connect(context.Background(), os.Getenv("PG_LOCAL"))
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("error connecting to database: %w", err)
 	}
 
-	if db == nil {
-		panic("db nil")
-	}
-
-	return db
+	fmt.Println("Connected to database")
+	return nil
 }
 
 func CreateTables() error {
 
-	db := Connection()
-	defer db.Close()
+	DataBaseConn()
 
 	queris := []string{
 		`
 		CREATE TABLE IF NOT EXISTS users (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			name TEXT,
-			email TEXT,
-			hashpassword TEXT,
-			role TEXT DEFAULT "admin",
+			id SERIAL PRIMARY KEY,
+			name TEXT NOT NULL,
+			email TEXT UNIQUE NOT NULL,
+			hashpassword TEXT NOT NULL,
+			role TEXT DEFAULT 'admin',
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 		);
-		`,
-		`
+
 		CREATE TABLE IF NOT EXISTS posts (
-			id TEXT PRIMARY KEY,
-			title TEXT,
+			id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+			title TEXT NOT NULL,
 			cover TEXT,
-			author TEXT,
-			date TIMESTAMP,
-			visible BOOLEAN DEFAULT false,
-			tags TEXT
+			author TEXT NOT NULL,
+			date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			visible BOOLEAN DEFAULT FALSE,
+			tags TEXT,
+			FOREIGN KEY (author) REFERENCES users(email) ON DELETE CASCADE
 		);
-	`,
-		`CREATE TABLE IF NOT EXISTS blog_posts (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+		CREATE TABLE IF NOT EXISTS blog_posts (
+			id SERIAL PRIMARY KEY,
 			position INTEGER NOT NULL,
 			type TEXT NOT NULL,
 			content TEXT NOT NULL,
-			post_id INTEGER,
-			FOREIGN KEY(post_id) REFERENCES posts(id)
+			post_id UUID,
+			FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
 		);
 		`,
 	}
 
 	for _, query := range queris {
-		db.Exec(query)
+		_, err := Conn.Exec(context.Background(), query)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

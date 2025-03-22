@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -62,6 +63,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
+	fmt.Println(dbUser)
 	// compare password
 	matchingPassword := hash.CheckPasswordHash(LoginValues.Password, dbUser.HashPassword)
 	if !matchingPassword {
