@@ -46,6 +46,7 @@ func main() {
 	read := r.Group("/blog")
 
 	read.GET("/:id", blog.Read)
+	read.GET("/all", blog.GetAllPosts)
 	read.POST("/new", authRoutes.Handler(), blog.Write)
 
 	// Handle 404 routes

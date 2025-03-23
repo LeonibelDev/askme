@@ -53,3 +53,39 @@ func SavePost(post models.Post) (bool, error) {
 
 	return true, nil
 }
+
+func GetAllPostsFromDB() ([]models.Post, error) {
+
+	db.DataBaseConn()
+
+	query := `
+		SELECT * FROM posts
+	`
+
+	rows, err := db.Conn.Query(context.Background(), query)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var posts []models.Post
+
+	for rows.Next() {
+		var post models.Post
+
+		// temporal variable
+		var tags string
+
+		if err = rows.Scan(&post.ID, &post.Title, &post.Cover, &post.Author, &post.Date, &post.Visible, &tags); err != nil {
+			return nil, err
+		}
+
+		post.Tags = append(post.Tags, strings.Split(tags, ", ")...)
+
+		posts = append(posts, post)
+	}
+
+	return posts, nil
+
+}

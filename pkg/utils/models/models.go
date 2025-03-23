@@ -45,5 +45,5 @@ type Post struct {
 	Date     time.Time  `json:"date,omitempty"`
 	Visible  bool       `json:"visible,omitempty"`
 	Tags     []string   `json:"tags" binding:"required"`
-	Sections []BlogPost `json:"sections" binding:"required"`
+	Sections []BlogPost `json:"sections,omitempty"`
 }

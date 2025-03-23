@@ -49,9 +49,24 @@ func Write(c *gin.Context) {
 	}
 
 	// return response
-	c.JSON(200, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"post": post,
 		"tags": strings.Join(post.Tags, ", "),
 	})
+
+}
+
+func GetAllPosts(c *gin.Context) {
+
+	// get all posts from db
+	posts, err := controllers.GetAllPostsFromDB()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, posts)
 
 }
