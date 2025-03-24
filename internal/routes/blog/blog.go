@@ -1,7 +1,6 @@
 package blog
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -12,12 +11,12 @@ import (
 )
 
 func Read(c *gin.Context) {
-
 	id, _ := c.Params.Get("id")
+
+	post, _ := controllers.GetOnePostFromDB(id)
+
 	c.JSON(200, gin.H{
-		"Message": "Welcome to askme.dev API *",
-		"id":      id,
-		"status":  http.StatusOK,
+		"post": post,
 	})
 }
 
@@ -41,11 +40,6 @@ func Write(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
-	}
-
-	// print sections
-	for _, section := range post.Sections {
-		fmt.Println("Section: ", section)
 	}
 
 	// return response

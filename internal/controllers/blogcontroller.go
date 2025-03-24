@@ -89,3 +89,30 @@ func GetAllPostsFromDB() ([]models.Post, error) {
 	return posts, nil
 
 }
+
+func GetOnePostFromDB(uuid string) (models.Post, error) {
+
+	db.DataBaseConn()
+
+	query := `
+		SELECT id, title, cover, date, visible, tags FROM posts WHERE id = $1
+	`
+
+	rows, err := db.Conn.Query(context.Background(), query, uuid)
+	if err != nil {
+		return models.Post{}, err
+	}
+
+	defer rows.Close()
+
+	var post models.Post
+	var tags string
+
+	if err = rows.Scan(&post.ID, &post.Title, &post.Cover, &post.Date, &post.Visible, &tags); err != nil {
+		return models.Post{}, err
+	}
+
+	post.Tags = append(post.Tags, strings.Split(tags, ", ")...)
+
+	return post, nil
+}
