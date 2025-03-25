@@ -17,6 +17,7 @@ func Read(c *gin.Context) {
 
 	c.JSON(200, gin.H{
 		"post": post,
+		"id":   id,
 	})
 }
 

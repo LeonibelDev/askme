@@ -95,24 +95,41 @@ func GetOnePostFromDB(uuid string) (models.Post, error) {
 	db.DataBaseConn()
 
 	query := `
-		SELECT id, title, cover, date, visible, tags FROM posts WHERE id = $1
+		SELECT id, title, cover, date, visible, tags, author FROM posts WHERE id = $1
+	`
+	var post models.Post
+	var tags string
+
+	err := db.Conn.QueryRow(context.Background(), query, uuid).Scan(&post.ID, &post.Title, &post.Cover, &post.Date, &post.Visible, &tags, &post.Author)
+
+	if err != nil {
+		return models.Post{}, nil
+	}
+
+	post.Tags = append(post.Tags, strings.Split(tags, ", ")...)
+
+	// find sections
+
+	query_sections := `
+		SELECT position, type, content FROM blog_posts WHERE post_id = $1
 	`
 
-	rows, err := db.Conn.Query(context.Background(), query, uuid)
+	rows, err := db.Conn.Query(context.Background(), query_sections, uuid)
 	if err != nil {
 		return models.Post{}, err
 	}
 
 	defer rows.Close()
 
-	var post models.Post
-	var tags string
+	for rows.Next() {
+		var section models.BlogPost
 
-	if err = rows.Scan(&post.ID, &post.Title, &post.Cover, &post.Date, &post.Visible, &tags); err != nil {
-		return models.Post{}, err
+		if err = rows.Scan(&section.Position, &section.Type, &section.Content); err != nil {
+			return models.Post{}, err
+		}
+
+		post.Sections = append(post.Sections, section)
 	}
-
-	post.Tags = append(post.Tags, strings.Split(tags, ", ")...)
 
 	return post, nil
 }
