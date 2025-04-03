@@ -25,7 +25,10 @@ func SavePost(post models.Post) (bool, error) {
 
 	// First insert data in post table
 	query := `
-		INSERT INTO posts (title, cover, author, tags) VALUES ($1, $2, $3, $4) RETURNING id
+		INSERT INTO posts (title, cover, author, tags) 
+		VALUES ($1, $2, $3, $4) 
+		RETURNING id
+
 	`
 
 	err = tx.QueryRow(context.Background(), query, post.Title, post.Cover, post.Author, strings.Join(post.Tags, ", ")).Scan(&post.ID)
@@ -37,7 +40,8 @@ func SavePost(post models.Post) (bool, error) {
 
 	// Then insert sections in po
 	querySections := `
-		INSERT INTO blog_posts (position, type, content, post_id) VALUES ($1, $2, $3, $4)
+		INSERT INTO blog_posts (position, type, content, post_id) 
+		VALUES ($1, $2, $3, $4)
 	`
 
 	for _, section := range post.Sections {
@@ -51,6 +55,8 @@ func SavePost(post models.Post) (bool, error) {
 		return false, err
 	}
 
+	defer tx.Conn().Close(context.Background())
+	
 	return true, nil
 }
 
@@ -111,8 +117,8 @@ func GetOnePostFromDB(uuid string) (models.Post, error) {
 	// find sections
 
 	query_sections := `
-		SELECT position, type, content FROM blog_posts WHERE post_id = $1
-	`
+			SELECT position, type, content FROM blog_posts WHERE post_id = $1 ORDER BY position ASC
+		`
 
 	rows, err := db.Conn.Query(context.Background(), query_sections, uuid)
 	if err != nil {

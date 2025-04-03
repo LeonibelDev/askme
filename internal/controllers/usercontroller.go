@@ -40,7 +40,8 @@ func UserExist(email string) bool {
 	db.DataBaseConn()
 
 	query := `
-		SELECT id FROM users WHERE email = $1 LIMIT 1
+		SELECT id FROM users 
+		WHERE email = $1 LIMIT 1
 	`
 
 	var id int
@@ -54,7 +55,8 @@ func CreateUser(user models.User) bool {
 	db.DataBaseConn()
 
 	query := `
-		INSERT INTO users (name, email, hashpassword) VALUES ($1, $2, $3)
+		INSERT INTO users (name, email, hashpassword) 
+		VALUES ($1, $2, $3)
 	`
 
 	err := db.Conn.QueryRow(context.Background(), query, user.Name, user.Email, user.Password).Scan()

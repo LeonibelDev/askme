@@ -58,6 +58,13 @@ func main() {
 		})
 	})
 
+	//Heart
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "OK",
+		})
+	})
+
 	// Run application
 	//port := os.Getenv("PORT")
 	r.Run(fmt.Sprintf(":%s", "3000"))

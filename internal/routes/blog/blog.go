@@ -17,7 +17,6 @@ func Read(c *gin.Context) {
 
 	c.JSON(200, gin.H{
 		"post": post,
-		"id":   id,
 	})
 }
 
@@ -62,6 +61,8 @@ func GetAllPosts(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, posts)
+	c.JSON(http.StatusOK, gin.H{
+		"posts": posts,
+	})
 
 }

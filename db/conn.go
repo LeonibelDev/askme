@@ -13,7 +13,7 @@ var Conn *pgx.Conn
 
 func DataBaseConn() error {
 	var err error
-	Conn, err = pgx.Connect(context.Background(), os.Getenv("PG_LOCAL"))
+	Conn, err = pgx.Connect(context.Background(), os.Getenv("PG_URI"))
 	if err != nil {
 		return fmt.Errorf("error connecting to database: %w", err)
 	}
