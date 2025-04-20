@@ -2,7 +2,6 @@ package blog
 
 import (
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -36,7 +35,7 @@ func Write(c *gin.Context) {
 	post.Author = author.(string)
 
 	// save post
-	_, err := controllers.SavePost(post)
+	postId, err := controllers.SavePost(post)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -44,8 +43,7 @@ func Write(c *gin.Context) {
 
 	// return response
 	c.JSON(http.StatusOK, gin.H{
-		"post": post,
-		"tags": strings.Join(post.Tags, ", "),
+		"postId": postId,
 	})
 
 }

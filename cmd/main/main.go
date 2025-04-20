@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/leonibeldev/askme/db"
@@ -22,6 +24,9 @@ func main() {
 
 	gin.SetMode(gin.DebugMode)
 	r := gin.Default()
+
+	// CORS
+	r.Use(cors.Default())
 
 	// db connection
 	db.CreateTables()
@@ -66,6 +71,6 @@ func main() {
 	})
 
 	// Run application
-	//port := os.Getenv("PORT")
-	r.Run(fmt.Sprintf(":%s", "3000"))
+	port := os.Getenv("PORT")
+	r.Run(fmt.Sprintf(":%s", port))
 }

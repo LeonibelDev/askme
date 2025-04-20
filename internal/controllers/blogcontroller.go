@@ -9,11 +9,11 @@ import (
 	"github.com/leonibeldev/askme/pkg/utils/models"
 )
 
-func SavePost(post models.Post) (bool, error) {
+func SavePost(post models.Post) (string, error) {
 
 	tx, err := db.Conn.Begin(context.Background())
 	if err != nil {
-		return false, err
+		return "", err
 	}
 
 	// rollback transaction if error
@@ -33,7 +33,7 @@ func SavePost(post models.Post) (bool, error) {
 
 	err = tx.QueryRow(context.Background(), query, post.Title, post.Cover, post.Author, strings.Join(post.Tags, ", ")).Scan(&post.ID)
 	if err != nil {
-		return false, err
+		return "", err
 	}
 
 	fmt.Println("Post ID: ", post.ID)
@@ -47,53 +47,70 @@ func SavePost(post models.Post) (bool, error) {
 	for _, section := range post.Sections {
 		_, err := tx.Exec(context.Background(), querySections, section.Position, section.Type, section.Content, post.ID)
 		if err != nil {
-			return false, fmt.Errorf("error inserting section: %v, error: %w", section, err)
+			return "", fmt.Errorf("error inserting section: %v, error: %w", section, err)
 		}
 	}
 
 	if err = tx.Commit(context.Background()); err != nil {
-		return false, err
+		return "", err
 	}
 
 	defer tx.Conn().Close(context.Background())
-	
-	return true, nil
+
+	return post.ID, nil
 }
 
 func GetAllPostsFromDB() ([]models.Post, error) {
-
 	db.DataBaseConn()
 
 	query := `
-		SELECT * FROM posts
+		SELECT 
+			p.id, p.title, p.cover, p.author, p.date, p.visible, p.tags,
+			b.position, b.type, b.content
+		FROM posts p
+		LEFT JOIN LATERAL (
+			SELECT position, type, content
+			FROM blog_posts
+			WHERE post_id = p.id AND type = 'text'
+			ORDER BY position ASC
+			LIMIT 1
+		) b ON true
+		ORDER BY p.date DESC
 	`
 
 	rows, err := db.Conn.Query(context.Background(), query)
 	if err != nil {
 		return nil, err
 	}
-
 	defer rows.Close()
 
 	var posts []models.Post
 
 	for rows.Next() {
 		var post models.Post
-
-		// temporal variable
 		var tags string
+		var section models.BlogPost
+		var sectionType *string
 
-		if err = rows.Scan(&post.ID, &post.Title, &post.Cover, &post.Author, &post.Date, &post.Visible, &tags); err != nil {
+		err = rows.Scan(
+			&post.ID, &post.Title, &post.Cover, &post.Author, &post.Date, &post.Visible, &tags,
+			&section.Position, &sectionType, &section.Content,
+		)
+		if err != nil {
 			return nil, err
 		}
 
-		post.Tags = append(post.Tags, strings.Split(tags, ", ")...)
+		post.Tags = strings.Split(tags, ", ")
+
+		if sectionType != nil {
+			section.Type = *sectionType
+			post.Sections = append(post.Sections, section)
+		}
 
 		posts = append(posts, post)
 	}
 
 	return posts, nil
-
 }
 
 func GetOnePostFromDB(uuid string) (models.Post, error) {
