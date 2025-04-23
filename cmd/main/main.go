@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -26,7 +27,14 @@ func main() {
 	r := gin.Default()
 
 	// CORS
-	r.Use(cors.Default())
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 
 	// db connection
 	db.CreateTables()
@@ -51,6 +59,7 @@ func main() {
 	read := r.Group("/blog")
 
 	read.GET("/:id", blog.Read)
+	read.GET("/search", blog.GetPostsByTags)
 	read.GET("/all", blog.GetAllPosts)
 	read.POST("/new", authRoutes.Handler(), blog.Write)
 

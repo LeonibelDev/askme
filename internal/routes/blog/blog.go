@@ -64,3 +64,26 @@ func GetAllPosts(c *gin.Context) {
 	})
 
 }
+
+func GetPostsByTags(c *gin.Context) {
+	tag := c.Query("tag")
+
+	if tag == "" {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Query 'tag' is required",
+		})
+		return
+	}
+
+	posts, err := controllers.GetPostsByTags(tag)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Posts not found",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"posts": posts,
+	})
+}

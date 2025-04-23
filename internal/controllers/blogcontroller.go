@@ -36,8 +36,6 @@ func SavePost(post models.Post) (string, error) {
 		return "", err
 	}
 
-	fmt.Println("Post ID: ", post.ID)
-
 	// Then insert sections in po
 	querySections := `
 		INSERT INTO blog_posts (position, type, content, post_id) 
@@ -54,8 +52,6 @@ func SavePost(post models.Post) (string, error) {
 	if err = tx.Commit(context.Background()); err != nil {
 		return "", err
 	}
-
-	defer tx.Conn().Close(context.Background())
 
 	return post.ID, nil
 }
@@ -155,4 +151,55 @@ func GetOnePostFromDB(uuid string) (models.Post, error) {
 	}
 
 	return post, nil
+}
+
+func GetPostsByTags(tag string) ([]models.Post, error) {
+	db.DataBaseConn()
+
+	query := `
+		SELECT 
+			p.id, p.title, p.cover, p.author, p.date, p.visible, p.tags,
+			b.position, b.type, b.content
+		FROM posts p
+		LEFT JOIN LATERAL (
+			SELECT position, type, content
+			FROM blog_posts
+			WHERE post_id = p.id AND type = 'text'
+			ORDER BY position ASC
+			LIMIT 1
+		) b ON true
+		WHERE p.tags ILIKE '%$1%'
+		ORDER BY p.date DESC
+		`
+
+	rows, err := db.Conn.Query(context.Background(), query, tag)
+	if err != nil {
+		return []models.Post{}, err
+	}
+
+	defer rows.Close()
+
+	var posts []models.Post
+
+	for rows.Next() {
+		var post models.Post
+		var tags string
+		var section models.BlogPost
+		var sectionType *string
+
+		err := rows.Scan(&post.ID, &post.Title, &post.Cover, &post.Date, &post.Visible, &tags,
+			&section.Position, &sectionType, &section.Content,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		post.Tags = strings.Split(tags, ", ")
+		section.Type = *sectionType
+		post.Sections = append(post.Sections, section)
+
+		posts = append(posts, post)
+	}
+
+	return posts, nil
 }
