@@ -43,7 +43,9 @@ func SavePost(post models.Post) (string, error) {
 	`
 
 	for _, section := range post.Sections {
+
 		_, err := tx.Exec(context.Background(), querySections, section.Position, section.Type, section.Content, post.ID)
+
 		if err != nil {
 			return "", fmt.Errorf("error inserting section: %v, error: %w", section, err)
 		}
@@ -72,6 +74,7 @@ func GetAllPostsFromDB() ([]models.Post, error) {
 			LIMIT 1
 		) b ON true
 		ORDER BY p.date DESC
+		LIMIT 3
 	`
 
 	rows, err := db.Conn.Query(context.Background(), query)
@@ -86,11 +89,13 @@ func GetAllPostsFromDB() ([]models.Post, error) {
 		var post models.Post
 		var tags string
 		var section models.BlogPost
+		var sectionPosition *int
 		var sectionType *string
+		var sectionContent *string
 
 		err = rows.Scan(
 			&post.ID, &post.Title, &post.Cover, &post.Author, &post.Date, &post.Visible, &tags,
-			&section.Position, &sectionType, &section.Content,
+			&sectionPosition, &sectionType, &sectionContent,
 		)
 		if err != nil {
 			return nil, err
@@ -98,9 +103,15 @@ func GetAllPostsFromDB() ([]models.Post, error) {
 
 		post.Tags = strings.Split(tags, ", ")
 
-		if sectionType != nil {
+		// Check if section fields are not nil before adding the section to the post
+		if sectionPosition != nil && sectionType != nil && sectionContent != nil {
+			section.Position = *sectionPosition
 			section.Type = *sectionType
+			section.Content = *sectionContent
+
 			post.Sections = append(post.Sections, section)
+		} else {
+			post.Sections = append(post.Sections, models.BlogPost{})
 		}
 
 		posts = append(posts, post)

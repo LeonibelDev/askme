@@ -14,6 +14,7 @@ import (
 	adminRoutes "github.com/leonibeldev/askme/internal/routes/admin"
 	authRoutes "github.com/leonibeldev/askme/internal/routes/auth"
 	"github.com/leonibeldev/askme/internal/routes/blog"
+	"github.com/leonibeldev/askme/internal/routes/newsletter"
 )
 
 func main() {
@@ -38,6 +39,10 @@ func main() {
 
 	// db connection
 	db.CreateTables()
+
+	// newsletter
+	r.POST("/newsletter", newsletter.NewUser)
+	r.GET("/newsletter/:uuid", newsletter.RemoveUser)
 
 	// Routes for Home / portfolio
 	r.GET("/github/:username", blog.GetGitHubRepos)

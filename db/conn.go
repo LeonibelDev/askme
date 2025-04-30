@@ -26,7 +26,7 @@ func CreateTables() error {
 
 	DataBaseConn()
 
-	queris := []string{
+	query :=
 		`
 		CREATE TABLE IF NOT EXISTS users (
 			id SERIAL PRIMARY KEY,
@@ -56,14 +56,17 @@ func CreateTables() error {
 			post_id UUID,
 			FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
 		);
-		`,
-	}
 
-	for _, query := range queris {
-		_, err := Conn.Exec(context.Background(), query)
-		if err != nil {
-			return err
-		}
+		CREATE TABLE IF NOT EXISTS newsletter (
+			id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+			email TEXT NOT NULL UNIQUE,
+			inserted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		);
+		`
+
+	_, err := Conn.Exec(context.Background(), query)
+	if err != nil {
+		return err
 	}
 
 	return nil

@@ -47,3 +47,9 @@ type Post struct {
 	Tags     []string   `json:"tags" binding:"required"`
 	Sections []BlogPost `json:"sections,omitempty"`
 }
+
+type Newsletter struct {
+	ID          string    `json:"id,omitempty"`
+	Email       string    `json:"email"`
+	Inserted_at time.Time `json:"Inserted_at,omitempty"`
+}
