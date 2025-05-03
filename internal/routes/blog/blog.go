@@ -49,9 +49,12 @@ func Write(c *gin.Context) {
 }
 
 func GetAllPosts(c *gin.Context) {
+	// get page
+	offset := c.Query("offset")
+	// limit := c.Query("limit")
 
 	// get all posts from db
-	posts, err := controllers.GetAllPostsFromDB()
+	posts, err := controllers.GetAllPostsFromDB(offset)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err,

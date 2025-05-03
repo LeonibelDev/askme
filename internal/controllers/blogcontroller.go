@@ -58,24 +58,24 @@ func SavePost(post models.Post) (string, error) {
 	return post.ID, nil
 }
 
-func GetAllPostsFromDB() ([]models.Post, error) {
+func GetAllPostsFromDB(offset string) ([]models.Post, error) {
 	db.DataBaseConn()
 
-	query := `
+	query := fmt.Sprintf(`
 		SELECT 
 			p.id, p.title, p.cover, p.author, p.date, p.visible, p.tags,
 			b.position, b.type, b.content
 		FROM posts p
-		LEFT JOIN LATERAL (
-			SELECT position, type, content
-			FROM blog_posts
-			WHERE post_id = p.id AND type = 'text'
-			ORDER BY position ASC
-			LIMIT 1
-		) b ON true
-		ORDER BY p.date DESC
-		LIMIT 3
-	`
+			LEFT JOIN LATERAL (
+				SELECT position, type, content
+				FROM blog_posts
+				WHERE post_id = p.id AND type = 'text'
+				ORDER BY position ASC
+				LIMIT 1
+			) b ON true
+			ORDER BY p.date DESC
+			LIMIT 5 OFFSET %s
+	`, offset)
 
 	rows, err := db.Conn.Query(context.Background(), query)
 	if err != nil {
