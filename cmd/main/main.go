@@ -15,8 +15,17 @@ import (
 	authRoutes "github.com/leonibeldev/askme/internal/routes/auth"
 	"github.com/leonibeldev/askme/internal/routes/blog"
 	"github.com/leonibeldev/askme/internal/routes/newsletter"
+
+	_ "github.com/leonibeldev/askme/docs"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+// @title AskMe API
+// @version 1.0
+// @description API for authentication, blog management, and newsletter subscription.
+// @host localhost:3000
+// @BasePath /
 func main() {
 	// load .env
 	err := godotenv.Load()
@@ -84,6 +93,7 @@ func main() {
 		})
 	})
 
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	// Run application
 	port := os.Getenv("PORT")
 	r.Run(fmt.Sprintf(":%s", port))

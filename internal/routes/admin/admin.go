@@ -9,6 +9,13 @@ import (
 	"github.com/leonibeldev/askme/internal/controllers"
 )
 
+// Home godoc
+// @Summary Admin home
+// @Tags Admin
+// @Produce json
+// @Success 200 {object} map[string]string
+// @Router /admin/home [get]
+// @Security ApiKeyAuth
 func Home(c *gin.Context) {
 	userEmail, exist := c.Get("email")
 	if !exist {
@@ -23,6 +30,13 @@ func Home(c *gin.Context) {
 	})
 }
 
+// User godoc
+// @Summary Get admin user
+// @Tags Admin
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /admin/user [get]
+// @Security ApiKeyAuth
 func User(c *gin.Context) {
 	userEmail, exist := c.Get("email")
 	if !exist {

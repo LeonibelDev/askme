@@ -1,0 +1,339 @@
+basePath: /
+definitions:
+  github_com_leonibeldev_askme_pkg_utils_models.BlogPost:
+    properties:
+      Type:
+        type: string
+      content:
+        type: string
+      position:
+        type: integer
+    required:
+    - Type
+    - content
+    - position
+    type: object
+  github_com_leonibeldev_askme_pkg_utils_models.Login:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  github_com_leonibeldev_askme_pkg_utils_models.Newsletter:
+    properties:
+      Inserted_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+    type: object
+  github_com_leonibeldev_askme_pkg_utils_models.Post:
+    properties:
+      author:
+        type: string
+      cover:
+        type: string
+      date:
+        type: string
+      id:
+        type: string
+      sections:
+        items:
+          $ref: '#/definitions/github_com_leonibeldev_askme_pkg_utils_models.BlogPost'
+        type: array
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+      visible:
+        type: boolean
+    required:
+    - cover
+    - tags
+    - title
+    type: object
+  github_com_leonibeldev_askme_pkg_utils_models.User:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+host: localhost:3000
+info:
+  contact: {}
+  description: API for authentication, blog management, and newsletter subscription.
+  title: AskMe API
+  version: "1.0"
+paths:
+  /admin/home:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Admin home
+      tags:
+      - Admin
+  /admin/user:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Get admin user
+      tags:
+      - Admin
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Login credentials
+        in: body
+        name: login
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_leonibeldev_askme_pkg_utils_models.Login'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Login user
+      tags:
+      - Auth
+  /auth/signup:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User registration info
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_leonibeldev_askme_pkg_utils_models.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Register new user
+      tags:
+      - Auth
+  /blog:
+    get:
+      parameters:
+      - description: Offset for pagination
+        in: query
+        name: offset
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all blog posts with optional pagination
+      tags:
+      - Blog
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Blog Post
+        in: body
+        name: post
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_leonibeldev_askme_pkg_utils_models.Post'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new blog post
+      tags:
+      - Blog
+  /blog/{id}:
+    get:
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get a single blog post by ID
+      tags:
+      - Blog
+  /blog/tag:
+    get:
+      parameters:
+      - description: Tag to filter posts
+        in: query
+        name: tag
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get blog posts filtered by tag
+      tags:
+      - Blog
+  /newsletter:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Newsletter User
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_leonibeldev_askme_pkg_utils_models.Newsletter'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Subscribe to newsletter
+      tags:
+      - Newsletter
+  /newsletter/{uuid}:
+    get:
+      parameters:
+      - description: User UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Unsubscribe from newsletter
+      tags:
+      - Newsletter
+swagger: "2.0"

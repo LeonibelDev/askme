@@ -9,6 +9,14 @@ import (
 	"github.com/leonibeldev/askme/pkg/utils/models"
 )
 
+// Read godoc
+// @Summary Get a single blog post by ID
+// @Tags Blog
+// @Produce json
+// @Param id path string true "Post ID"
+// @Success 200 {object} map[string]interface{}
+// @Failure 404 {object} map[string]string
+// @Router /blog/{id} [get]
 func Read(c *gin.Context) {
 	id, _ := c.Params.Get("id")
 
@@ -19,6 +27,16 @@ func Read(c *gin.Context) {
 	})
 }
 
+// Write godoc
+// @Summary Create a new blog post
+// @Tags Blog
+// @Accept json
+// @Produce json
+// @Param post body models.Post true "Blog Post"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /blog [post]
 func Write(c *gin.Context) {
 
 	var post models.Post
@@ -48,6 +66,14 @@ func Write(c *gin.Context) {
 
 }
 
+// GetAllPosts godoc
+// @Summary Get all blog posts with optional pagination
+// @Tags Blog
+// @Produce json
+// @Param offset query string false "Offset for pagination"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {object} map[string]string
+// @Router /blog [get]
 func GetAllPosts(c *gin.Context) {
 	// get page
 	offset := c.Query("offset")
@@ -68,6 +94,14 @@ func GetAllPosts(c *gin.Context) {
 
 }
 
+// GetPostsByTags godoc
+// @Summary Get blog posts filtered by tag
+// @Tags Blog
+// @Produce json
+// @Param tag query string true "Tag to filter posts"
+// @Success 200 {object} map[string]interface{}
+// @Failure 404 {object} map[string]string
+// @Router /blog/tag [get]
 func GetPostsByTags(c *gin.Context) {
 	tag := c.Query("tag")
 

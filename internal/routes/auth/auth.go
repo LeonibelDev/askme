@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -45,6 +44,16 @@ func Handler() gin.HandlerFunc {
 	}
 }
 
+// Login godoc
+// @Summary Login user
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param login body models.Login true "Login credentials"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Router /auth/login [post]
 func Login(c *gin.Context) {
 
 	// parse user data input
@@ -63,7 +72,6 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	fmt.Println(dbUser)
 	// compare password
 	matchingPassword := hash.CheckPasswordHash(LoginValues.Password, dbUser.HashPassword)
 	if !matchingPassword {
@@ -81,6 +89,15 @@ func Login(c *gin.Context) {
 	})
 }
 
+// Signup godoc
+// @Summary Register new user
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param user body models.User true "User registration info"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Router /auth/signup [post]
 func Signup(c *gin.Context) {
 
 	var userData models.User
