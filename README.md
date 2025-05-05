@@ -19,6 +19,7 @@ localhost:[port]/swagger/index.html
 ```
 
 ### project structure
+```
 ├── cmd
 │   └── main
 │       └── main.go
@@ -54,3 +55,4 @@ localhost:[port]/swagger/index.html
 │       └── token
 │           └── jwt.go
 └── README.md
+```
