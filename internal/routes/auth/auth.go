@@ -24,7 +24,7 @@ func Handler() gin.HandlerFunc {
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"error": "No token provide (Unauthorized)",
 			})
-			c.Abort()
+			return
 		}
 
 		AuthorizationToken := strings.Split(c.GetHeader("Authorization"), " ")[1]
@@ -35,7 +35,7 @@ func Handler() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": "Invalid token in header (Authorization)",
 			})
-			c.Abort()
+			return
 		}
 
 		//return claims
@@ -59,7 +59,9 @@ func Login(c *gin.Context) {
 	// parse user data input
 	var LoginValues models.Login
 	if err := c.ShouldBindJSON(&LoginValues); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
 		return
 	}
 

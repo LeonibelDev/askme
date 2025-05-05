@@ -33,10 +33,14 @@ func Read(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param post body models.Post true "Blog Post"
-// @Success 200 {object} map[string]interface{}
+// @Success 200 models.Post{} map[string]interface{}
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
-// @Router /blog [post]
+// @Security BearerAuth
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @Router /blog/new [post]
 func Write(c *gin.Context) {
 
 	var post models.Post

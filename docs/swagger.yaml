@@ -198,6 +198,32 @@ paths:
       summary: Get all blog posts with optional pagination
       tags:
       - Blog
+  /blog/{id}:
+    get:
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get a single blog post by ID
+      tags:
+      - Blog
+  /blog/new:
     post:
       consumes:
       - application/json
@@ -228,32 +254,9 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - BearerAuth: []
       summary: Create a new blog post
-      tags:
-      - Blog
-  /blog/{id}:
-    get:
-      parameters:
-      - description: Post ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties: true
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get a single blog post by ID
       tags:
       - Blog
   /blog/tag:

@@ -201,8 +201,15 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
+            }
+        },
+        "/blog/new": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
