@@ -4,18 +4,19 @@ import (
 	"time"
 )
 
-type User struct {
-	Name     string `json:"name" binding:"required"`
-	Email    string `json:"email" binding:"required"`
-	Password string `json:"password" binding:"required"`
-}
-
 type DBUser struct {
-	Name         string    `json:"name"`
-	Email        string    `json:"email"`
-	HashPassword string    `json:"hashpassword"`
-	Role         string    `json:"role"`
-	Created_at   time.Time `json:"created_at"`
+	Fullname      string    `json:"fullname"`
+	Username      string    `json:"username,omitempty"`
+	Email         string    `json:"email"`
+	Password      string    `json:"password"`
+	Role          string    `json:"role,omitempty"`
+	Resume        string    `json:"resume,omitempty"`
+	Is_verified   bool      `json:"is_verified,omitempty"`
+	Created_at    time.Time `json:"created_at,omitempty"`
+	Twitter       string    `json:"twitter,omitempty"`
+	Github        string    `json:"github,omitempty"`
+	Instagram     string    `json:"instagram,omitempty"`
+	External_link string    `json:"external_link,omitempty"`
 }
 
 type Login struct {

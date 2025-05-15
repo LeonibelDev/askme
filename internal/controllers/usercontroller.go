@@ -14,7 +14,7 @@ func GetUser(email string) (models.DBUser, error) {
 	db.DataBaseConn()
 
 	query := `
-		SELECT name, email, hashpassword, role, created_at FROM users WHERE email = $1
+		SELECT fullname, email, password, role, created_at FROM users WHERE email = $1
 	`
 	var user models.DBUser
 
@@ -27,7 +27,7 @@ func GetUser(email string) (models.DBUser, error) {
 		return user, errors.New("user not found")
 	}
 
-	err = rows.Scan(&user.Name, &user.Email, &user.HashPassword, &user.Role, &user.Created_at)
+	err = rows.Scan(&user.Fullname, &user.Email, &user.Password, &user.Role, &user.Created_at)
 	if err != nil {
 		return user, err
 	}
@@ -50,16 +50,16 @@ func UserExist(email string) bool {
 	return bool(err == nil)
 }
 
-func CreateUser(user models.User) bool {
+func CreateUser(user models.DBUser) bool {
 
 	db.DataBaseConn()
 
 	query := `
-		INSERT INTO users (name, email, hashpassword) 
-		VALUES ($1, $2, $3)
+		INSERT INTO users (fullname, username, email, password) 
+		VALUES ($1, $2, $3, $4)
 	`
 
-	err := db.Conn.QueryRow(context.Background(), query, user.Name, user.Email, user.Password).Scan()
+	err := db.Conn.QueryRow(context.Background(), query, user.Fullname, user.Username, user.Email, user.Password).Scan()
 
 	return err == nil || err == pgx.ErrNoRows
 }

@@ -103,7 +103,7 @@ func GetAllPosts(c *gin.Context) {
 // @Tags Blog
 // @Produce json
 // @Param tag query string true "Tag to filter posts"
-// @Success 200 {object} map[string]interface{}
+// @Success 200 models.Post{} map[string]interface{}
 // @Failure 404 {object} map[string]string
 // @Router /blog/tag [get]
 func GetPostsByTags(c *gin.Context) {

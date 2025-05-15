@@ -1,10 +1,13 @@
 package routes
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/leonibeldev/askme/internal/controllers"
+	"github.com/leonibeldev/askme/pkg/utils/functions"
 	"github.com/leonibeldev/askme/pkg/utils/hash"
 	"github.com/leonibeldev/askme/pkg/utils/models"
 	"github.com/leonibeldev/askme/pkg/utils/token"
@@ -75,7 +78,7 @@ func Login(c *gin.Context) {
 	}
 
 	// compare password
-	matchingPassword := hash.CheckPasswordHash(LoginValues.Password, dbUser.HashPassword)
+	matchingPassword := hash.CheckPasswordHash(LoginValues.Password, dbUser.Password)
 	if !matchingPassword {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error": "password not matching",
@@ -102,7 +105,7 @@ func Login(c *gin.Context) {
 // @Router /auth/signup [post]
 func Signup(c *gin.Context) {
 
-	var userData models.User
+	var userData models.DBUser
 
 	// verify if all data is comming
 	if err := c.ShouldBindJSON(&userData); err != nil {
@@ -140,8 +143,14 @@ func Signup(c *gin.Context) {
 		return
 	}
 
+	// set username
+	userData.Username = strings.ToLower(fmt.Sprintf("%s_%d", strings.Split(userData.Fullname, " ")[0], functions.RandomNumber()))
+
 	// create user
 	controllers.CreateUser(userData)
+
+	// set time
+	userData.Created_at = time.Now()
 
 	// generate token
 	token, err := token.GenerateToken(userData.Email)
@@ -152,5 +161,6 @@ func Signup(c *gin.Context) {
 	// return user data and comparation
 	c.JSON(http.StatusOK, gin.H{
 		"token": "Bearer " + token,
+		"user":  userData,
 	})
 }

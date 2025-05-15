@@ -30,11 +30,18 @@ func CreateTables() error {
 		`
 		CREATE TABLE IF NOT EXISTS users (
 			id SERIAL PRIMARY KEY,
-			name TEXT NOT NULL,
+			fullname TEXT NOT NULL,
+			username TEXT NOT NULL,
 			email TEXT UNIQUE NOT NULL,
-			hashpassword TEXT NOT NULL,
-			role TEXT DEFAULT 'admin',
-			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+			password TEXT NOT NULL,
+			role TEXT DEFAULT 'user',
+			resume TEXT NOT NULL,
+			is_verified BOOLEAN DEFAULT FALSE,
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			twitter TEXT,
+			github TEXT,
+			instagram TEXT,
+			external_link TEXT
 		);
 
 		CREATE TABLE IF NOT EXISTS posts (

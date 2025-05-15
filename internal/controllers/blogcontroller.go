@@ -179,13 +179,13 @@ func GetPostsByTags(tag string) ([]models.Post, error) {
 			ORDER BY position ASC
 			LIMIT 1
 		) b ON true
-		WHERE p.tags ILIKE '%$1%'
+		WHERE p.tags ILIKE $1
 		ORDER BY p.date DESC
 		`
 
-	rows, err := db.Conn.Query(context.Background(), query, tag)
+	rows, err := db.Conn.Query(context.Background(), query, "%"+tag+"%")
 	if err != nil {
-		return []models.Post{}, err
+		return nil, err
 	}
 
 	defer rows.Close()
@@ -196,18 +196,28 @@ func GetPostsByTags(tag string) ([]models.Post, error) {
 		var post models.Post
 		var tags string
 		var section models.BlogPost
+		var sectionPosition *int
 		var sectionType *string
+		var sectionContent *string
 
-		err := rows.Scan(&post.ID, &post.Title, &post.Cover, &post.Date, &post.Visible, &tags,
-			&section.Position, &sectionType, &section.Content,
+		err = rows.Scan(&post.ID, &post.Title, &post.Cover, &post.Author, &post.Date, &post.Visible, &tags,
+			&sectionPosition, &sectionType, &sectionContent,
 		)
 		if err != nil {
 			return nil, err
 		}
 
 		post.Tags = strings.Split(tags, ", ")
-		section.Type = *sectionType
-		post.Sections = append(post.Sections, section)
+
+		if sectionPosition != nil && sectionType != nil && sectionContent != nil {
+			section.Position = *sectionPosition
+			section.Type = *sectionType
+			section.Content = *sectionContent
+
+			post.Sections = append(post.Sections, section)
+		} else {
+			post.Sections = append(post.Sections, models.BlogPost{})
+		}
 
 		posts = append(posts, post)
 	}
