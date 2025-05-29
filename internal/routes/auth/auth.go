@@ -146,11 +146,11 @@ func Signup(c *gin.Context) {
 	// set username
 	userData.Username = strings.ToLower(fmt.Sprintf("%s_%d", strings.Split(userData.Fullname, " ")[0], functions.RandomNumber()))
 
-	// create user
-	controllers.CreateUser(userData)
-
 	// set time
 	userData.Created_at = time.Now()
+
+	// create user
+	controllers.CreateUser(userData)
 
 	// generate token
 	token, err := token.GenerateToken(userData.Email)
