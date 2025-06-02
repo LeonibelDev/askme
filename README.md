@@ -20,39 +20,40 @@ localhost:[port]/swagger/index.html
 
 ### project structure
 ```
-├── cmd
-│   └── main
-│       └── main.go
-├── db
-│   └── conn.go
-├── docs
-│   ├── docs.go
-│   ├── swagger.json
-│   └── swagger.yaml
+askme/
+├── cmd/
+│   └── main/
+│       └── main.go              # Application entry point
+├── db/
+│   └── conn.go                  # Database connection setup
+├── docs/
+│   ├── docs.go                  # Swagger docs registration
+│   ├── swagger.json
+│   └── swagger.yaml
+├── internal/
+│   ├── controllers/             # HTTP handler logic
+│   │   ├── blogcontroller.go
+│   │   ├── newsletter.go
+│   │   └── usercontroller.go
+│   └── routes/                  # Route definitions
+│       ├── admin/
+│       │   └── admin.go
+│       ├── auth/
+│       │   └── auth.go
+│       ├── blog/
+│       │   ├── blog.go
+│       │   └── repos.go
+│       └── newsletter/
+│           └── newsletter.go
+├── pkg/
+│   └── utils/                   # Shared utility packages
+│       ├── hash/
+│       │   └── hash.go
+│       ├── models/
+│       │   └── models.go
+│       └── token/
+│           └── jwt.go
 ├── go.mod
 ├── go.sum
-├── internal
-│   ├── controllers
-│   │   ├── blogcontroller.go
-│   │   ├── newsletter.go
-│   │   └── usercontroller.go
-│   └── routes
-│       ├── admin
-│       │   └── admin.go
-│       ├── auth
-│       │   └── auth.go
-│       ├── blog
-│       │   ├── blog.go
-│       │   └── repos.go
-│       └── newsletter
-│           └── newsletter.go
-├── pkg
-│   └── utils
-│       ├── hash
-│       │   └── hash.go
-│       ├── models
-│       │   └── models.go
-│       └── token
-│           └── jwt.go
 └── README.md
 ```
