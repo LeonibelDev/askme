@@ -14,7 +14,7 @@ func GetUser(email string) (models.DBUser, error) {
 	db.DataBaseConn()
 
 	query := `
-		SELECT fullname, email, password, role, created_at FROM users WHERE email = $1
+		SELECT * FROM users WHERE email = $1
 	`
 	var user models.DBUser
 
@@ -27,9 +27,24 @@ func GetUser(email string) (models.DBUser, error) {
 		return user, errors.New("user not found")
 	}
 
-	err = rows.Scan(&user.Fullname, &user.Email, &user.Password, &user.Role, &user.Created_at)
+	// social
+	var twitter *string
+	var github *string
+	var instagram *string
+
+	err = rows.Scan(&user.Id, &user.Fullname, &user.Username, &user.Email, &user.Password, &user.Role, &user.Resume, &user.Is_verified, &user.Created_at, &twitter, &github, &instagram, &user.External_link)
 	if err != nil {
 		return user, err
+	}
+
+	if twitter != nil {
+		user.Twitter = *twitter
+	}
+	if github != nil {
+		user.Github = *github
+	}
+	if instagram != nil {
+		user.Instagram = *instagram
 	}
 
 	return user, nil

@@ -42,7 +42,7 @@ func Handler() gin.HandlerFunc {
 		}
 
 		//return claims
-		c.Set("email", claims["email"])
+		c.Set("user", claims["email"])
 		c.Next()
 	}
 }

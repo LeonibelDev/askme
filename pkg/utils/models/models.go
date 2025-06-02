@@ -5,6 +5,7 @@ import (
 )
 
 type DBUser struct {
+	Id            int       `json:"id,omitempty"`
 	Fullname      string    `json:"fullname"`
 	Username      string    `json:"username,omitempty"`
 	Email         string    `json:"email"`
@@ -13,10 +14,10 @@ type DBUser struct {
 	Resume        string    `json:"resume,omitempty"`
 	Is_verified   bool      `json:"is_verified,omitempty"`
 	Created_at    time.Time `json:"created_at,omitempty"`
-	Twitter       string    `json:"twitter,omitempty"`
-	Github        string    `json:"github,omitempty"`
-	Instagram     string    `json:"instagram,omitempty"`
-	External_link string    `json:"external_link,omitempty"`
+	Twitter       string    `json:"twitter"`
+	Github        string    `json:"github"`
+	Instagram     string    `json:"instagram"`
+	External_link string    `json:"external_link"`
 }
 
 type Login struct {

@@ -35,7 +35,7 @@ func CreateTables() error {
 			email TEXT UNIQUE NOT NULL,
 			password TEXT NOT NULL,
 			role TEXT DEFAULT 'user',
-			resume TEXT NOT NULL,
+			resume TEXT,
 			is_verified BOOLEAN DEFAULT FALSE,
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			twitter TEXT,
