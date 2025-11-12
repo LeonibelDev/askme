@@ -7,7 +7,6 @@ import (
 )
 
 func AddUserNewsletter(email string) error {
-	db.DataBaseConn()
 
 	query := `
 		 INSERT INTO newsletter(email)
@@ -19,14 +18,10 @@ func AddUserNewsletter(email string) error {
 		return err
 	}
 
-	defer db.Conn.Close(context.Background())
-
 	return nil
 }
 
 func RemoveUserNewsletter(uuid string) error {
-
-	db.DataBaseConn()
 
 	query := `
 		DELETE FROM newsletter

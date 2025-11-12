@@ -1,6 +1,7 @@
 package blog
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -46,6 +47,7 @@ func Write(c *gin.Context) {
 	var post models.Post
 	if err := c.ShouldBindJSON(&post); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		fmt.Println("Error aqui!!!!!!!!!!!!!!!")
 		return
 	}
 
@@ -53,8 +55,12 @@ func Write(c *gin.Context) {
 	post.Date = time.Now()
 
 	// set post author
-	author, _ := c.Get("email")
+	author, _ := c.Get("username")
 	post.Author = author.(string)
+
+	// set fullname
+	fullname, _ := c.Get("fullname")
+	post.FullName = fullname.(string)
 
 	// save post
 	postId, err := controllers.SavePost(post)
@@ -83,6 +89,12 @@ func GetAllPosts(c *gin.Context) {
 	offset := c.Query("offset")
 	// limit := c.Query("limit")
 
+	if len(offset) == 0 {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "offset is required",
+		})
+		return
+	}
 	// get all posts from db
 	posts, err := controllers.GetAllPostsFromDB(offset)
 	if err != nil {

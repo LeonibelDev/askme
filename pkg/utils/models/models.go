@@ -14,15 +14,17 @@ type DBUser struct {
 	Resume        string    `json:"resume,omitempty"`
 	Is_verified   bool      `json:"is_verified,omitempty"`
 	Created_at    time.Time `json:"created_at,omitempty"`
-	Twitter       string    `json:"twitter"`
-	Github        string    `json:"github"`
-	Instagram     string    `json:"instagram"`
-	External_link string    `json:"external_link"`
+	Twitter       string    `json:"twitter,omitempty"`
+	Github        string    `json:"github,omitempty"`
+	Instagram     string    `json:"instagram,omitempty"`
+	External_link string    `json:"external_link,omitempty"`
 }
 
 type Login struct {
 	Email    string `json:"email" binding:"required"`
 	Password string `json:"password" binding:"required"`
+	Fullname string `json:"fullname,omitempty"`
+	Username string `json:"username,omitempty"`
 }
 
 type GitHubRepo struct {
@@ -44,6 +46,7 @@ type Post struct {
 	Title    string     `json:"title" binding:"required"`
 	Cover    string     `json:"cover" binding:"required"`
 	Author   string     `json:"author,omitempty"`
+	FullName string     `json:"fullname,omitempty"`
 	Date     time.Time  `json:"date,omitempty"`
 	Visible  bool       `json:"visible,omitempty"`
 	Tags     []string   `json:"tags" binding:"required"`

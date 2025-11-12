@@ -5,9 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"time"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/leonibeldev/askme/db"
@@ -15,6 +13,7 @@ import (
 	authRoutes "github.com/leonibeldev/askme/internal/routes/auth"
 	"github.com/leonibeldev/askme/internal/routes/blog"
 	"github.com/leonibeldev/askme/internal/routes/newsletter"
+	"github.com/leonibeldev/askme/pkg/utils/functions"
 
 	_ "github.com/leonibeldev/askme/docs"
 	swaggerFiles "github.com/swaggo/files"
@@ -28,26 +27,39 @@ import (
 // @BasePath /
 func main() {
 	// load .env
-	err := godotenv.Load()
+	err := godotenv.Load("../../.env")
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
 	gin.SetMode(gin.DebugMode)
-	r := gin.Default()
+	app := gin.Default()
+
+	// Rate Limiter Middleware
+	app.Use(functions.RateLimiter())
 
 	// CORS
-	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
-	}))
+	app.Use(functions.Cors())
+
+	// Group for api
+	r := app.Group("/api")
 
 	// db connection
-	db.CreateTables()
+	err = db.DataBaseConn()
+	if err != nil {
+		return
+	}
+	// create tables if not exist
+	err = db.CreateTables()
+	if err != nil {
+		return
+	}
+
+	defer db.Conn.Close()
+
+	// init redis
+	db.InitRedis()
+	defer db.RedisClient.Close()
 
 	// newsletter
 	r.POST("/newsletter", newsletter.NewUser)
@@ -78,11 +90,17 @@ func main() {
 	read.POST("/new", authRoutes.Handler(), blog.Write)
 
 	// Handle 404 routes
-	r.NoRoute(func(c *gin.Context) {
+	app.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error":   "Not Found",
 			"message": "The route you are looking for does not exist. Please check the URL and try again.",
-			"status":  http.StatusNotFound,
+		})
+	})
+
+	app.NoMethod(func(c *gin.Context) {
+		c.JSON(http.StatusMethodNotAllowed, gin.H{
+			"error":   "Method Not Allowed",
+			"message": "Please check the URL and try again.",
 		})
 	})
 
@@ -94,7 +112,11 @@ func main() {
 	})
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	// Run application
 	port := os.Getenv("PORT")
-	r.Run(fmt.Sprintf(":%s", port))
+	err = app.Run(fmt.Sprintf("0.0.0.0:%s", port))
+	if err != nil {
+		return
+	}
 }

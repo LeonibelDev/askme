@@ -2,8 +2,10 @@ package controllers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/leonibeldev/askme/db"
 	"github.com/leonibeldev/askme/pkg/utils/models"
@@ -25,13 +27,13 @@ func SavePost(post models.Post) (string, error) {
 
 	// First insert data in post table
 	query := `
-		INSERT INTO posts (title, cover, author, tags) 
-		VALUES ($1, $2, $3, $4) 
+		INSERT INTO posts (title, cover, author, fullname, tags) 
+		VALUES ($1, $2, $3, $4, $5) 
 		RETURNING id
 
 	`
 
-	err = tx.QueryRow(context.Background(), query, post.Title, post.Cover, post.Author, strings.Join(post.Tags, ", ")).Scan(&post.ID)
+	err = tx.QueryRow(context.Background(), query, post.Title, post.Cover, post.Author, post.FullName, strings.Join(post.Tags, ", ")).Scan(&post.ID)
 	if err != nil {
 		return "", err
 	}
@@ -59,11 +61,10 @@ func SavePost(post models.Post) (string, error) {
 }
 
 func GetAllPostsFromDB(offset string) ([]models.Post, error) {
-	db.DataBaseConn()
 
 	query := fmt.Sprintf(`
 		SELECT 
-			p.id, p.title, p.cover, p.author, p.date, p.visible, p.tags,
+			p.id, p.title, p.cover, p.author, p.fullname, p.date, p.visible, p.tags,
 			b.position, b.type, b.content
 		FROM posts p
 			LEFT JOIN LATERAL (
@@ -81,7 +82,6 @@ func GetAllPostsFromDB(offset string) ([]models.Post, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
 
 	var posts []models.Post
 
@@ -94,7 +94,7 @@ func GetAllPostsFromDB(offset string) ([]models.Post, error) {
 		var sectionContent *string
 
 		err = rows.Scan(
-			&post.ID, &post.Title, &post.Cover, &post.Author, &post.Date, &post.Visible, &tags,
+			&post.ID, &post.Title, &post.Cover, &post.Author, &post.FullName, &post.Date, &post.Visible, &tags,
 			&sectionPosition, &sectionType, &sectionContent,
 		)
 		if err != nil {
@@ -122,15 +122,26 @@ func GetAllPostsFromDB(offset string) ([]models.Post, error) {
 
 func GetOnePostFromDB(uuid string) (models.Post, error) {
 
-	db.DataBaseConn()
+	cacheKey := "post:" + uuid
+
+	// check in redis first
+	cached, err := db.RedisClient.Get(db.Ctx, cacheKey).Result()
+	if err == nil {
+		// return cached post -> from redis to front
+		var post models.Post
+		err = json.Unmarshal([]byte(cached), &post)
+		if err == nil {
+			return post, nil
+		}
+	}
 
 	query := `
-		SELECT id, title, cover, date, visible, tags, author FROM posts WHERE id = $1
+		SELECT id, title, cover, date, visible, tags, author, fullname FROM posts WHERE id = $1
 	`
 	var post models.Post
 	var tags string
 
-	err := db.Conn.QueryRow(context.Background(), query, uuid).Scan(&post.ID, &post.Title, &post.Cover, &post.Date, &post.Visible, &tags, &post.Author)
+	err = db.Conn.QueryRow(context.Background(), query, uuid).Scan(&post.ID, &post.Title, &post.Cover, &post.Date, &post.Visible, &tags, &post.Author, &post.FullName)
 
 	if err != nil {
 		return models.Post{}, nil
@@ -149,8 +160,6 @@ func GetOnePostFromDB(uuid string) (models.Post, error) {
 		return models.Post{}, err
 	}
 
-	defer rows.Close()
-
 	for rows.Next() {
 		var section models.BlogPost
 
@@ -161,11 +170,12 @@ func GetOnePostFromDB(uuid string) (models.Post, error) {
 		post.Sections = append(post.Sections, section)
 	}
 
+	jsonData, _ := json.Marshal(post)
+	db.RedisClient.Set(db.Ctx, cacheKey, jsonData, time.Hour)
 	return post, nil
 }
 
 func GetPostsByTags(tag string) ([]models.Post, error) {
-	db.DataBaseConn()
 
 	query := `
 		SELECT 
@@ -187,8 +197,6 @@ func GetPostsByTags(tag string) ([]models.Post, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	defer rows.Close()
 
 	var posts []models.Post
 

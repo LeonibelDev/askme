@@ -4,19 +4,16 @@ import (
 	"context"
 	"errors"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/leonibeldev/askme/db"
 	"github.com/leonibeldev/askme/pkg/utils/models"
 )
 
-func GetUser(email string) (models.DBUser, error) {
-
-	db.DataBaseConn()
+func GetUser(email string) (models.Login, error) {
 
 	query := `
-		SELECT * FROM users WHERE email = $1
+		SELECT email, password, fullname, username  FROM users WHERE email = $1
 	`
-	var user models.DBUser
+	var user models.Login
 
 	rows, err := db.Conn.Query(context.Background(), query, email)
 	if err != nil {
@@ -27,32 +24,15 @@ func GetUser(email string) (models.DBUser, error) {
 		return user, errors.New("user not found")
 	}
 
-	// social
-	var twitter *string
-	var github *string
-	var instagram *string
-
-	err = rows.Scan(&user.Id, &user.Fullname, &user.Username, &user.Email, &user.Password, &user.Role, &user.Resume, &user.Is_verified, &user.Created_at, &twitter, &github, &instagram, &user.External_link)
+	err = rows.Scan(&user.Email, &user.Password, &user.Fullname, &user.Username)
 	if err != nil {
 		return user, err
-	}
-
-	if twitter != nil {
-		user.Twitter = *twitter
-	}
-	if github != nil {
-		user.Github = *github
-	}
-	if instagram != nil {
-		user.Instagram = *instagram
 	}
 
 	return user, nil
 }
 
 func UserExist(email string) bool {
-
-	db.DataBaseConn()
 
 	query := `
 		SELECT id FROM users 
@@ -67,8 +47,6 @@ func UserExist(email string) bool {
 
 func CreateUser(user models.DBUser) bool {
 
-	db.DataBaseConn()
-
 	query := `
 		INSERT INTO users (fullname, username, email, password) 
 		VALUES ($1, $2, $3, $4)
@@ -76,5 +54,5 @@ func CreateUser(user models.DBUser) bool {
 
 	err := db.Conn.QueryRow(context.Background(), query, user.Fullname, user.Username, user.Email, user.Password).Scan()
 
-	return err == nil || err == pgx.ErrNoRows
+	return err == nil
 }

@@ -7,3 +7,4 @@ go.sum
 .env
 api.json
 tmp
+/.idea

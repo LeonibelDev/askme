@@ -42,7 +42,9 @@ func Handler() gin.HandlerFunc {
 		}
 
 		//return claims
-		c.Set("user", claims["email"])
+		c.Set("email", claims["email"])
+		c.Set("fullname", claims["fullname"])
+		c.Set("username", claims["username"])
 		c.Next()
 	}
 }
@@ -61,6 +63,7 @@ func Login(c *gin.Context) {
 
 	// parse user data input
 	var LoginValues models.Login
+
 	if err := c.ShouldBindJSON(&LoginValues); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -87,10 +90,13 @@ func Login(c *gin.Context) {
 	}
 
 	// generate toke if all information is correct ⚠
-	stringToken, _ := token.GenerateToken(dbUser.Email)
+	stringToken, _ := token.GenerateToken(dbUser.Email, dbUser.Username, dbUser.Fullname)
+
+	fmt.Println(dbUser.Fullname)
 
 	c.JSON(http.StatusOK, gin.H{
 		"token": "Bearer " + stringToken,
+		"user":  dbUser.Fullname,
 	})
 }
 
@@ -153,14 +159,16 @@ func Signup(c *gin.Context) {
 	controllers.CreateUser(userData)
 
 	// generate token
-	token, err := token.GenerateToken(userData.Email)
+	token, err := token.GenerateToken(userData.Email, userData.Username, userData.Fullname)
 	if err != nil {
 		panic(err)
 	}
 
-	// return user data and comparation
+	fmt.Println(userData.Fullname)
+
+	// return token and username
 	c.JSON(http.StatusOK, gin.H{
 		"token": "Bearer " + token,
-		"user":  userData,
+		"user":  userData.Fullname,
 	})
 }
