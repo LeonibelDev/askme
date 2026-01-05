@@ -1,3 +1,14 @@
+// @title           mytechblog API
+// @version         1.0
+// @description     API for mytechblog platform.
+// @termsOfService  work in progress
+
+// @contact.name   LeonibelDev
+// @contact.email  leonibel.ramirez@gmail.com
+
+// @host      localhost:3000
+// @BasePath  /api
+
 package main
 
 import (
@@ -14,26 +25,31 @@ import (
 	"github.com/leonibeldev/askme/internal/routes/blog"
 	"github.com/leonibeldev/askme/internal/routes/newsletter"
 	"github.com/leonibeldev/askme/pkg/utils/functions"
+	"github.com/leonibeldev/askme/pkg/utils/models"
 
 	_ "github.com/leonibeldev/askme/docs"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-// @title AskMe API
-// @version 1.0
-// @description API for authentication, blog management, and newsletter subscription.
-// @host localhost:3000
-// @BasePath /
 func main() {
+
 	// load .env
 	err := godotenv.Load("../../.env")
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
+	// Init Uptrace
+	/*uptrace.ConfigureOpentelemetry(
+		uptrace.WithDSN(fmt.Sprintf("https://%s@api.uptrace.dev?grpc=4317", os.Getenv("OPENTRACE_GRPC_ADDR"))),
+	)*/
+
 	gin.SetMode(gin.DebugMode)
 	app := gin.Default()
+
+	// Metrics
+	//app.Use(otelgin.Middleware("mytechblog"))
 
 	// Rate Limiter Middleware
 	app.Use(functions.RateLimiter())
@@ -43,6 +59,10 @@ func main() {
 
 	// Group for api
 	r := app.Group("/api")
+
+	/******************************
+	*	Databases Connections
+	*******************************/
 
 	// db connection
 	err = db.DataBaseConn()
@@ -61,12 +81,13 @@ func main() {
 	db.InitRedis()
 	defer db.RedisClient.Close()
 
+	/******************************
+	*	Databases Connections
+	*******************************/
+
 	// newsletter
 	r.POST("/newsletter", newsletter.NewUser)
 	r.GET("/newsletter/:uuid", newsletter.RemoveUser)
-
-	// Routes for Home / portfolio
-	r.GET("/github/:username", blog.GetGitHubRepos)
 
 	// Routes for Auth API
 	auth := r.Group("/auth")
@@ -74,40 +95,44 @@ func main() {
 	auth.POST("/signup", authRoutes.Signup)
 	auth.POST("/login", authRoutes.Login)
 
-	// Routes for Admin 🔒
+	// Secure Routes
 	admin := r.Group("/admin")
 	admin.Use(authRoutes.Handler())
 
-	admin.GET("/home", adminRoutes.Home) // secure routes 🔒
-	admin.GET("/user", adminRoutes.User)
+	admin.GET("/home", adminRoutes.Home)
+	admin.GET("/profile", adminRoutes.User)
+	admin.PUT("/profile", adminRoutes.UpdateProfile)
 
 	// Routes for Blog API and Portfolio
-	read := r.Group("/blog")
+	posts := r.Group("/posts")
 
-	read.GET("/:id", blog.Read)
-	read.GET("/search", blog.GetPostsByTags)
-	read.GET("/all", blog.GetAllPosts)
-	read.POST("/new", authRoutes.Handler(), blog.Write)
+	posts.GET("/", blog.GetAllPosts)
+	posts.GET("/top", blog.GetTopPosts)
+	posts.GET("/:id", blog.Read)
+	posts.GET("/tag/:tag", blog.GetPostsByTags)
+
+	posts.POST("/", authRoutes.Handler(), blog.Write)
+	posts.GET("/by/:author", blog.GetPostsByAuthor)
 
 	// Handle 404 routes
 	app.NoRoute(func(c *gin.Context) {
-		c.JSON(http.StatusNotFound, gin.H{
-			"error":   "Not Found",
-			"message": "The route you are looking for does not exist. Please check the URL and try again.",
+		c.JSON(http.StatusNotFound, models.ResponseMessage{
+			Success: false,
+			Message: "Resource Not Found. Please check the URL and try again.",
 		})
 	})
 
 	app.NoMethod(func(c *gin.Context) {
-		c.JSON(http.StatusMethodNotAllowed, gin.H{
-			"error":   "Method Not Allowed",
-			"message": "Please check the URL and try again.",
+		c.JSON(http.StatusMethodNotAllowed, models.ResponseMessage{
+			Success: false,
+			Message: "Method Not Allowed. Please check the request method and try again.",
 		})
 	})
 
 	//Heart
-	r.GET("/health", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "OK",
+	app.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"status": http.StatusOK,
 		})
 	})
 
@@ -115,6 +140,7 @@ func main() {
 
 	// Run application
 	port := os.Getenv("PORT")
+
 	err = app.Run(fmt.Sprintf("0.0.0.0:%s", port))
 	if err != nil {
 		return
