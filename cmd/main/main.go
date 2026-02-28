@@ -12,10 +12,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -109,6 +112,7 @@ func main() {
 	posts.GET("/", blog.GetAllPosts)
 	posts.GET("/top", blog.GetTopPosts)
 	posts.GET("/:id", blog.Read)
+	posts.PUT("/:id", blog.UpdatePost)
 	posts.GET("/tag/:tag", blog.GetPostsByTags)
 
 	posts.POST("/", authRoutes.Handler(), blog.Write)
@@ -139,10 +143,34 @@ func main() {
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// Run application
-	port := os.Getenv("PORT")
 
-	err = app.Run(fmt.Sprintf("0.0.0.0:%s", port))
-	if err != nil {
-		return
+	server := &http.Server{
+		Addr:    fmt.Sprintf(":%v", os.Getenv("PORT")),
+		Handler: app,
 	}
+
+	go func() {
+		log.Printf("Server on port %s\n", server.Addr)
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatal(err)
+		}
+	}()
+
+	shutdown, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
+	defer cancel()
+	<-shutdown.Done()
+
+	log.Println("Shutingdown in progress...")
+	if err := server.Shutdown(context.Background()); err != nil {
+		log.Println("Forced shutdown")
+	}
+	log.Println("Server down successfully")
+
+	/*
+		port := os.Getenv("PORT")
+
+		err = app.Run(fmt.Sprintf("0.0.0.0:%s", port))
+		if err != nil {
+			return
+		}*/
 }
