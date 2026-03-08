@@ -67,7 +67,7 @@ func main() {
 	*******************************/
 
 	// db connection
-	err = db.DataBaseConn()
+	err := db.DataBaseConn()
 	if err != nil {
 		return
 	}
