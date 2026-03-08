@@ -21,7 +21,6 @@ import (
 	"syscall"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	"github.com/leonibeldev/askme/db"
 	adminRoutes "github.com/leonibeldev/askme/internal/routes/admin"
 	authRoutes "github.com/leonibeldev/askme/internal/routes/auth"
@@ -38,10 +37,10 @@ import (
 func main() {
 
 	// load .env
-	err := godotenv.Load("../../.env")
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	// err := godotenv.Load("../../.env")
+	// if err != nil {
+	// 	log.Fatal("Error loading .env file")
+	// }
 
 	// Init Uptrace
 	/*uptrace.ConfigureOpentelemetry(
