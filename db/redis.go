@@ -13,13 +13,14 @@ var Ctx = context.Background()
 func InitRedis() {
 	RedisClient = redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
+		Password: "",
+		DB:       0,
 	})
 
 	_, err := RedisClient.Ping(Ctx).Result()
 	if err != nil {
 		panic(fmt.Sprintf("Failed to connect to Redis: %v", err))
 	}
+
 	fmt.Println("Connected to Redis successfully")
 }

@@ -51,11 +51,12 @@ func CreateTables() error {
 			date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			visible BOOLEAN DEFAULT FALSE,
 			tags TEXT,
+			views INTEGER DEFAULT 0,
 			FOREIGN KEY (author) REFERENCES users(username) ON DELETE CASCADE
 		);`,
 
 		`CREATE TABLE IF NOT EXISTS blog_posts (
-			id SERIAL PRIMARY KEY,
+			id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 			position INTEGER NOT NULL,
 			type TEXT NOT NULL,
 			content TEXT NOT NULL,

@@ -24,8 +24,9 @@ func Handler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// get header (authorization)
 		if len(c.GetHeader("Authorization")) == 0 {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"error": "No token provide (Unauthorized)",
+			c.JSON(http.StatusUnauthorized, models.ResponseMessage{
+				Success: false,
+				Message: "No token provide in header (Authorization)",
 			})
 			return
 		}
@@ -35,8 +36,9 @@ func Handler() gin.HandlerFunc {
 		// validate token
 		claims, err := token.GetClaims(AuthorizationToken)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Invalid token in header (Authorization)",
+			c.JSON(http.StatusBadRequest, models.ResponseMessage{
+				Success: false,
+				Message: "Invalid token in header (Authorization)",
 			})
 			return
 		}
@@ -65,17 +67,22 @@ func Login(c *gin.Context) {
 	var LoginValues models.Login
 
 	if err := c.ShouldBindJSON(&LoginValues); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
+		c.JSON(http.StatusBadRequest, models.ResponseMessage{
+			Success: false,
+			Message: "Data binding error",
+			Error:   err.Error(),
 		})
 		return
 	}
 
+	LoginValues.Email = strings.ToLower(LoginValues.Email)
+
 	// validate if user exist
 	dbUser, err := controllers.GetUser(LoginValues.Email)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"error": "user not found",
+		c.JSON(http.StatusNotFound, models.ResponseMessage{
+			Success: false,
+			Message: "Invalid credentials",
 		})
 		return
 	}
@@ -83,8 +90,9 @@ func Login(c *gin.Context) {
 	// compare password
 	matchingPassword := hash.CheckPasswordHash(LoginValues.Password, dbUser.Password)
 	if !matchingPassword {
-		c.JSON(http.StatusNotFound, gin.H{
-			"error": "password not matching",
+		c.JSON(http.StatusNotFound, models.ResponseMessage{
+			Success: false,
+			Message: "Invalid credentials",
 		})
 		return
 	}
@@ -94,9 +102,10 @@ func Login(c *gin.Context) {
 
 	fmt.Println(dbUser.Fullname)
 
-	c.JSON(http.StatusOK, gin.H{
-		"token": "Bearer " + stringToken,
-		"user":  dbUser.Fullname,
+	c.JSON(http.StatusOK, models.ResponseMessage{
+		Success: true,
+		Data:    "Bearer " + stringToken,
+		Message: dbUser.Fullname,
 	})
 }
 
@@ -105,9 +114,16 @@ func Login(c *gin.Context) {
 // @Tags Auth
 // @Accept json
 // @Produce json
-// @Param user body models.User true "User registration info"
-// @Success 200 {object} map[string]string
-// @Failure 400 {object} map[string]string
+// @Param user body models.DBUser true "User registration info"
+// @Success 200 {object} models.ResponseMessage{data=string}
+// @Failure 400 {object} models.ResponseMessage
+//
+//	@Example 200 {json} SuccessResponse {
+//	  "success": true,
+//	  "message": "Welcome, John Doe",
+//	  "data": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+//	}
+//
 // @Router /auth/signup [post]
 func Signup(c *gin.Context) {
 
@@ -115,7 +131,23 @@ func Signup(c *gin.Context) {
 
 	// verify if all data is comming
 	if err := c.ShouldBindJSON(&userData); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, models.ResponseMessage{
+			Success: false,
+			Message: "All field are required to register",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	userData.Email = strings.ToLower(userData.Email)
+
+	// verify if user exist
+	user := controllers.UserExist(userData.Email)
+	if user {
+		c.JSON(http.StatusBadRequest, models.ResponseMessage{
+			Success: false,
+			Message: "User already exist",
+		})
 		return
 	}
 
@@ -129,7 +161,11 @@ func Signup(c *gin.Context) {
 	// hash password
 	hash, err := hash.HashPassword(userData.Password)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, models.ResponseMessage{
+			Success: false,
+			Message: "Error hashing password",
+			Error:   err.Error(),
+		})
 		return
 	}
 
@@ -138,19 +174,17 @@ func Signup(c *gin.Context) {
 	// compare password
 	err = bcrypt.CompareHashAndPassword([]byte(userData.Password), []byte(originalPassword))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	// verify if user exist
-	user := controllers.UserExist(userData.Email)
-	if user {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "user already exist"})
+		c.JSON(http.StatusBadRequest, models.ResponseMessage{
+			Success: false,
+			Message: "Error comparing password",
+			Error:   err.Error(),
+		})
 		return
 	}
 
 	// set username
-	userData.Username = strings.ToLower(fmt.Sprintf("%s_%d", strings.Split(userData.Fullname, " ")[0], functions.RandomNumber()))
+	randomId, _ := functions.RandomNumber()
+	userData.Username = strings.ToLower(fmt.Sprintf("%s_%d", strings.Split(userData.Fullname, " ")[0], randomId))
 
 	// set time
 	userData.Created_at = time.Now()
@@ -167,8 +201,9 @@ func Signup(c *gin.Context) {
 	fmt.Println(userData.Fullname)
 
 	// return token and username
-	c.JSON(http.StatusOK, gin.H{
-		"token": "Bearer " + token,
-		"user":  userData.Fullname,
+	c.JSON(http.StatusCreated, models.ResponseMessage{
+		Success: true,
+		Data:    "Bearer " + token,
+		Message: userData.Fullname,
 	})
 }

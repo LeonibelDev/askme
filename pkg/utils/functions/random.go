@@ -1,13 +1,15 @@
 package functions
 
 import (
-	"math/rand"
-	"time"
+	"crypto/rand"
+	"math/big"
 )
 
-func RandomNumber() int {
-	rand.Seed(time.Now().Unix())
-	min, max := 11111, 99999
-	RandomInRange := rand.Intn(max-min+1) + min
-	return RandomInRange
+func RandomNumber() (int, error) {
+	min, max := 00001, 99999
+	nBig, err := rand.Int(rand.Reader, big.NewInt(int64(max-min+1)))
+	if err != nil {
+		return 0, err
+	}
+	return int(nBig.Int64()), nil
 }

@@ -6,10 +6,10 @@ import (
 
 type DBUser struct {
 	Id            int       `json:"id,omitempty"`
-	Fullname      string    `json:"fullname"`
+	Fullname      string    `json:"fullname" binding:"required"`
 	Username      string    `json:"username,omitempty"`
-	Email         string    `json:"email"`
-	Password      string    `json:"password"`
+	Email         string    `json:"email" binding:"required"`
+	Password      string    `json:"password" binding:"required"`
 	Role          string    `json:"role,omitempty"`
 	Resume        string    `json:"resume,omitempty"`
 	Is_verified   bool      `json:"is_verified,omitempty"`
@@ -18,6 +18,18 @@ type DBUser struct {
 	Github        string    `json:"github,omitempty"`
 	Instagram     string    `json:"instagram,omitempty"`
 	External_link string    `json:"external_link,omitempty"`
+}
+
+type Profile struct {
+	Fullname      string    `json:"fullname"`
+	Username      string    `json:"username"`
+	Resume        *string   `json:"resume"`
+	Is_verified   bool      `json:"is_verified"`
+	Created_at    time.Time `json:"created_at"`
+	Twitter       *string   `json:"twitter"`
+	Github        *string   `json:"github"`
+	Instagram     *string   `json:"instagram"`
+	External_link *string   `json:"external_link"`
 }
 
 type Login struct {
@@ -36,6 +48,7 @@ type GitHubRepo struct {
 }
 
 type BlogPost struct {
+	ID       string `json:"id,omitempty"`
 	Position int    `json:"position" binding:"required"`
 	Type     string `json:"Type" binding:"required"`
 	Content  string `json:"content" binding:"required"`
@@ -51,10 +64,18 @@ type Post struct {
 	Visible  bool       `json:"visible,omitempty"`
 	Tags     []string   `json:"tags" binding:"required"`
 	Sections []BlogPost `json:"sections,omitempty"`
+	Views    int        `json:"views,omitempty"`
 }
 
 type Newsletter struct {
 	ID          string    `json:"id,omitempty"`
 	Email       string    `json:"email"`
 	Inserted_at time.Time `json:"Inserted_at,omitempty"`
+}
+
+type ResponseMessage struct {
+	Success bool        `json:"success"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data,omitempty"`
+	Error   string      `json:"error,omitempty"`
 }

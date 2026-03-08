@@ -22,7 +22,7 @@ func ErrorHandler(c *gin.Context, info ratelimit.Info) {
 func RateLimiter() gin.HandlerFunc {
 	store := ratelimit.InMemoryStore(&ratelimit.InMemoryOptions{
 		Rate:  time.Second,
-		Limit: 50,
+		Limit: 1000,
 	})
 
 	mw := ratelimit.RateLimiter(store, &ratelimit.Options{
